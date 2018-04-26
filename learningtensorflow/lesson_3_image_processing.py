@@ -4,11 +4,13 @@ Load an image using matplotlib, transpose it using tensorflow, and display.
 '''
 from matplotlib import image  # SEE ALSO: tf.image
 from matplotlib import pyplot
+import numpy as np
 import tensorflow as tf
 import argparse
 
 
-# Assumes an image to be present at /tmp/MarshOrchid.jpg.
+# Assumes an image to be present at /tmp/MarshOrchid.jpg. If not, modify to
+# download, put that code in something say tools/utils.
 # Download from https://learningtensorflow.com/images/MarshOrchid.jpg.
 PATH = '/tmp/MarshOrchid.jpg'
 
@@ -70,6 +72,16 @@ def rotate(img_array, anticlockwise=False):
   return transpose(reversed_image)
 
 
+def mirror(img_array):
+  '''Divide the image in half and show its mirror image as other half.'''
+  # width = len(img_array[0])
+  # Height can be used later if vertical mirroring is needed.
+  height, width, color_depth = img_array.shape
+  left_half_image = img_array[:, :width/2, :]
+  left_half_mirrored = reverse(left_half_image, axis=1)
+  return np.concatenate((left_half_image, left_half_mirrored), axis=1)
+
+
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument(
@@ -97,6 +109,13 @@ def main():
       help='Whether to rotate anticlockwise.', default=False)
   rotate_parser.set_defaults(func=rotate)
 
+  mirror_parser = subcommands.add_parser(
+      'mirror', help='Half the image and show its mirror image as other half.')
+  # mirror_parser.add_argument(
+  #     '--vertical', '-v', action='store_true',
+  #     help='Whether to flip vertically.', default=False)
+  mirror_parser.set_defaults(func=mirror)
+
   arguments = parser.parse_args()
   path = arguments.path
   img_array = image.imread(path)
@@ -109,6 +128,8 @@ def main():
   elif arguments.image_action == 'rotate':
     # img = rotate(img_array, arguments.direction)
     img = rotate(img_array, arguments.anticlockwise)
+  elif arguments.image_action == 'mirror':
+    img = mirror(img_array)
 
   pyplot.imshow(img)
   pyplot.show()
