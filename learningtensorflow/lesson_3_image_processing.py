@@ -59,19 +59,14 @@ def rotate(img_array, anticlockwise=False):
 
   Args:
     img_array: Array representing the image to transpose.
-    diagonal: Diagonal to transpose along, 0 (default) for primary, 1 for
-      secondary.
+    anticlockwise: Whether to rotate anticlockwise, False by default.
 
   Returns:
     Array that can be displayed, for showing transpose along the given axis.
   '''
-  if anticlockwise:
-    # To rotate, reverse vertically and transpose image (any order).
-    reversed_image = reverse(img_array, 1)
-    return transpose(reversed_image)
-
-  # To rotate, reverse and transpose image (any order).
-  reversed_image = reverse(img_array)
+  # To rotate, reverse and transpose image (any order). For anticlockwise
+  # direction, reverse vertically and transpose.
+  reversed_image = reverse(img_array, axis=int(anticlockwise))
   return transpose(reversed_image)
 
 
