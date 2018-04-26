@@ -43,7 +43,8 @@ def transpose(img_array, diagonal=False):
 def reverse(img_array, axis=0):
   '''Reverse and return the input image.
 
-  Allow passing in axis later.
+  Args:
+    axis: Horizontal or vertical. Set (1) for vertical, horizontal by default.
   '''
   # Same name as funcname! Can't use reversed to avoid masking builtin.
   # reverse = tf.reverse(img_array, dims=[True, False, False])
@@ -51,6 +52,27 @@ def reverse(img_array, axis=0):
   with tf.Session() as sess:
     reverse = sess.run(reverse)
   return reverse
+
+
+def rotate(img_array, anticlockwise=False):
+  '''Transpose and return input image array.
+
+  Args:
+    img_array: Array representing the image to transpose.
+    diagonal: Diagonal to transpose along, 0 (default) for primary, 1 for
+      secondary.
+
+  Returns:
+    Array that can be displayed, for showing transpose along the given axis.
+  '''
+  if anticlockwise:
+    # To rotate, reverse vertically and transpose image (any order).
+    reversed_image = reverse(img_array, 1)
+    return transpose(reversed_image)
+
+  # To rotate, reverse and transpose image (any order).
+  reversed_image = reverse(img_array)
+  return transpose(reversed_image)
 
 
 def main():
@@ -73,14 +95,25 @@ def main():
       help='Whether to flip vertically.', default=False)
   reverse_parser.set_defaults(func=reverse)
 
+  rotate_parser = subcommands.add_parser('rotate', help='Rotate an image.')
+  # Better way to map to dirs 1 and 0? Make arg -dir 1 with choices(0, 1)
+  rotate_parser.add_argument(
+      '--anticlockwise', '-a', action='store_true',
+      help='Whether to rotate anticlockwise.', default=False)
+  rotate_parser.set_defaults(func=rotate)
+
   arguments = parser.parse_args()
   path = arguments.path
   img_array = image.imread(path)
+  # Maybe below is a good idea. Probably write something to simplify args.
   # image = arguments.func(img_array, arguments)
   if arguments.image_action == 'reverse':
     img = reverse(img_array, 0 if arguments.vertical else 1)
-  else:
+  elif arguments.image_action == 'transpose':
     img = transpose(img_array, arguments.diagonal)
+  elif arguments.image_action == 'rotate':
+    # img = rotate(img_array, arguments.direction)
+    img = rotate(img_array, arguments.anticlockwise)
 
   pyplot.imshow(img)
   pyplot.show()
